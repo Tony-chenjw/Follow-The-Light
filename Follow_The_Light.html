@@ -1,0 +1,153 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Follow The Light</title>
+    <style>
+        body {
+            margin: 0;
+            /*width: max-content;*/
+            /*height: max-content;*/
+        }
+    </style>
+</head>
+<body>
+<audio src="src/QuidditchWorldCup.mp3" id="bush" controls="controls" loop="true" hidden="true"></audio>
+<audio src="src/Hedwig'sTheme.mp3" id="earth" controls="controls" loop="true" hidden="true"></audio>
+<audio src="src/Harry'sWondrousWorld.mp3" id="ocean" controls="controls" loop="true" hidden="true"></audio>
+
+<canvas id="mainCanvas" style="display: none"></canvas>
+<p id="p0"><br><br><br><br><br><br><br><br><br><br><br><br></p>
+
+<p id="p1" style="text-align:center">
+    <font face='华文楷体' size='6' color="#000000">请选择迷宫主题：</font>
+
+    <select id="theme" style="height:30px; width:80px">
+        <option value="src/bush/">灌木</option>
+        <option value="src/earth/">星空</option>
+        <option value="src/ocean/">海洋</option>
+    </select>
+
+</p>
+
+<p id="p2" style="text-align:center">
+    <font face='华文楷体' size='6' color="#000000">请选择迷宫大小（建议6~30）</font>
+    <input id="si" type="text" value="10" style="height:30px; width:80px"/>
+</p>
+
+<p style="text-align:center">
+    <button id="gameOn" onclick="change()"><font face='华文楷体' size='4'>开始游戏</font></button>
+</p>
+
+<script src="lib/three.min.js"></script>
+<script src="lib/THREEx.KeyboardState.js"></script>
+<script src="lib/mov.js"></script>
+<script src="lib/restrict.js"></script>
+<script src="lib/collision.js"></script>
+<script src="lib/Scene_Set.js"></script>
+<script src="lib/maze.js"></script>
+<script src="lib/Maze_Source.js"></script>
+<script src="lib/end.js"></script>
+
+<script>
+    var bush = document.getElementById("bush");
+    var earth = document.getElementById("earth");
+    var ocean = document.getElementById("ocean");
+
+    var theme = document.getElementById("theme");
+    var si = document.getElementById("si"); //接收迷宫大小
+    var path = "src/bush/";
+
+    var maze;
+    var cube = new Array();
+    var cubep = new Array();
+    var collideMeshList = [];
+    var requestID;
+
+    var scene;
+    var camera1;
+    var camera2;
+    var renderer;
+    // var geometry;
+    // var material;
+    var sphere1;
+    var sphere2;
+
+    var vec1;
+    var vec2;
+    var view1;
+    var view2;
+    var R = 2;
+    var theta_a1 = 0;
+    var theta_b1 = 0;
+    var theta_a2 = 0;
+    var theta_b2 = 0;
+    // var R = 2;
+    var move1 = new THREE.Vector3(0, 0, 0);
+    var movq1 = new THREE.Vector3(0, 0, 0);
+    var move2 = new THREE.Vector3(0, 0, 0);
+    var movq2 = new THREE.Vector3(0, 0, 0);
+    var clock1 = new THREE.Clock;
+    var clock2 = new THREE.Clock;
+    var keyboard = new THREEx.KeyboardState();
+
+    var size = 10;
+    var gap = 2; //unchangeable
+
+    function change() {
+        size = si.value;
+        path = theme.value;
+        show();
+        start();//开始绘制
+        demoDisplay();
+    }
+
+    function demoDisplay() {
+        document.getElementById("p0").style.display = "none";
+        document.getElementById("p1").style.display = "none";
+        document.getElementById("p2").style.display = "none";
+        document.getElementById("gameOn").style.display = "none";
+    }
+
+    function show() {
+        document.getElementById("mainCanvas").style.display = "";
+
+    }
+
+    function start() {
+        view1 = new THREE.Vector3(gap + R, 0, gap);
+        view2 = new THREE.Vector3((2 * size - 1) * gap + R, 0, gap);
+
+        initScene(size, gap);
+        initCamera1(gap, 0, gap, view1.x, view1.y, view1.z);
+        initCamera2((2 * size - 1) * gap, 0, gap, view2.x, view2.y, view2.z);
+
+        vec1 = new THREE.Vector3(view1.x - camera1.position.x, view1.y - camera1.position.x, view1.z - camera1.position.x).normalize();
+        vec2 = new THREE.Vector3(view2.x - camera2.position.x, view2.y - camera2.position.x, view2.z - camera2.position.x).normalize();
+
+        initRender();
+        initSphere1(gap / 4, camera1.position.x, camera1.position.y, camera1.position.z, 0xffff00);
+        initSphere2(gap / 4, camera2.position.x, camera2.position.y, camera2.position.z, 0xff0000);
+        collideMeshList.push(sphere2);
+        collideMeshList.push(sphere1);
+
+        function animate() {
+            requestID = requestAnimationFrame(animate);
+            end();
+            render(camera1, camera2, scene);
+            // renderer.render(scene, camera1);
+            collision1();
+            collision2();
+            restrict1();
+            restrict2();
+            mov1();
+            mov2();
+        }
+
+        animate();
+
+    }
+
+</script>
+
+</body>
+</html>
